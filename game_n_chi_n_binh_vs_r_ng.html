@@ -1,0 +1,1269 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nữ Chiến Binh vs Rồng Đỏ 7 Đầu 10 Sừng</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700;900&family=Montserrat:wght@400;600;800&display=swap" rel="stylesheet">
+    
+    <style>
+        body {
+            font-family: 'Montserrat', sans-serif;
+            background-color: #0d090a;
+            color: #f1f5f9;
+            user-select: none;
+            overflow-x: hidden;
+        }
+        
+        .font-cinzel {
+            font-family: 'Cinzel', serif;
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #1a0f0f;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #7f1d1d;
+            border-radius: 4px;
+        }
+
+        /* Game Screen Shake */
+        .shake {
+            animation: shakeAnim 0.4s cubic-bezier(.36,.07,.19,.97) both;
+        }
+        @keyframes shakeAnim {
+            10%, 90% { transform: translate3d(-3px, 0, 0); }
+            20%, 80% { transform: translate3d(5px, 0, 0); }
+            30%, 50%, 70% { transform: translate3d(-8px, 0, 0); }
+            40%, 60% { transform: translate3d(8px, 0, 0); }
+        }
+
+        /* Animations for Combat */
+        .warrior-idle {
+            animation: warriorHover 3s ease-in-out infinite;
+        }
+        @keyframes warriorHover {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-8px); }
+        }
+
+        .dragon-idle {
+            animation: dragonBreath 4s ease-in-out infinite;
+        }
+        @keyframes dragonBreath {
+            0%, 100% { transform: scale(1) translateY(0); }
+            50% { transform: scale(1.02) translateY(-5px); }
+        }
+
+        .warrior-attack {
+            animation: kickMove 0.8s ease-in-out forwards;
+        }
+        @keyframes kickMove {
+            0% { transform: translateX(0) scale(1); }
+            40% { transform: translateX(250px) scale(1.25) rotate(-15deg); }
+            60% { transform: translateX(280px) scale(1.3) rotate(-25deg); }
+            100% { transform: translateX(0) scale(1); }
+        }
+
+        .dragon-hit {
+            animation: dragonKnockback 0.8s ease-in-out forwards;
+        }
+        @keyframes dragonKnockback {
+            0% { transform: translateX(0); filter: brightness(1); }
+            20% { transform: translateX(60px) rotate(5deg); filter: brightness(2) drop-shadow(0 0 15px #ef4444); }
+            100% { transform: translateX(0); filter: brightness(1); }
+        }
+
+        .dragon-attack {
+            animation: dragonFlameStance 0.9s ease-in-out forwards;
+        }
+        @keyframes dragonFlameStance {
+            0% { transform: scale(1) translateX(0); }
+            30% { transform: scale(1.1) translateX(-30px); }
+            100% { transform: scale(1) translateX(0); }
+        }
+
+        .warrior-hit {
+            animation: warriorHitAnim 0.9s ease-in-out forwards;
+        }
+        @keyframes warriorHitAnim {
+            0% { filter: brightness(1); }
+            20% { filter: brightness(2) sepia(1) hue-rotate(-50deg) saturate(5); transform: translateX(-20px); }
+            100% { filter: brightness(1); transform: translateX(0); }
+        }
+
+        /* Health Bar Animation */
+        .hp-bar-fill {
+            transition: width 0.5s ease-out, background-color 0.3s;
+        }
+
+        /* Glassmorphism Panels */
+        .glass-panel {
+            background: rgba(20, 10, 15, 0.85);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(217, 119, 6, 0.3);
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.7);
+        }
+
+        .glass-card {
+            background: rgba(30, 20, 25, 0.75);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.2s ease;
+        }
+        .glass-card:hover {
+            border-color: rgba(245, 158, 11, 0.6);
+            background: rgba(45, 25, 30, 0.9);
+            transform: translateY(-2deg);
+        }
+
+        /* Pulsing Glow */
+        .glow-gold {
+            box-shadow: 0 0 20px rgba(245, 158, 11, 0.5);
+        }
+        .glow-red {
+            box-shadow: 0 0 20px rgba(220, 38, 38, 0.6);
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col justify-between items-center relative bg-gradient-to-b from-slate-950 via-zinc-900 to-stone-950 text-slate-100">
+
+    <!-- OVERLAY: AUDIO & GAME CONTROLS TOP BAR -->
+    <header class="w-full max-w-6xl px-4 py-2 z-30 flex justify-between items-center border-b border-amber-900/40 bg-black/60 backdrop-blur-md">
+        <div class="flex items-center space-x-3">
+            <span class="text-amber-500 font-cinzel font-bold text-lg md:text-xl tracking-wider flex items-center gap-2">
+                <i class="fa-solid font-bold fa-dragon text-red-600"></i> CHIẾN BINH VS RỒNG ĐỎ
+            </span>
+        </div>
+        <div class="flex items-center space-x-2">
+            <button id="bgmToggleBtn" onclick="toggleBGM()" class="px-3 py-1.5 rounded-lg bg-amber-900/40 hover:bg-amber-800/60 border border-amber-600/40 text-amber-300 text-xs md:text-sm font-semibold flex items-center gap-2 transition">
+                <i id="bgmIcon" class="fa-solid fa-volume-xmark text-red-400"></i> <span id="bgmText">Nhạc: Tắt</span>
+            </button>
+            <button onclick="openMediaModal()" class="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-600 text-slate-200 text-xs md:text-sm font-semibold flex items-center gap-2 transition" title="Thay đổi hình ảnh tham chiếu & Video Trailer">
+                <i class="fa-solid fa-image"></i> Media / Ảnh
+            </button>
+            <button onclick="openGithubGuide()" class="px-3 py-1.5 rounded-lg bg-red-950 hover:bg-red-900 border border-red-700 text-red-200 text-xs md:text-sm font-semibold flex items-center gap-2 transition" title="Hướng dẫn xuất bản GitHub Pages">
+                <i class="fa-brands fa-github"></i> GitHub Pages
+            </button>
+        </div>
+    </header>
+
+    <!-- MAIN GAME CONTAINER (STRICT 16:9 RATIO MAX-WIDTH) -->
+    <main id="gameContainer" class="relative w-full max-w-6xl aspect-video my-auto bg-slate-900 rounded-xl overflow-hidden shadow-2xl border-2 border-amber-900/50 flex flex-col justify-between">
+        
+        <!-- BỐI CẢNH NỀN (DESERT WASTELAND WITH MOUNTAINS & RED SKY) -->
+        <div class="absolute inset-0 z-0 bg-cover bg-center transition-all duration-700" id="gameBackground" style="background-image: linear-gradient(to bottom, rgba(15, 5, 5, 0.45), rgba(40, 10, 5, 0.75)), url('https://images.unsplash.com/photo-1509316975850-ff9c5deb0cd9?q=80&w=1600&auto=format&fit=crop');">
+            <!-- Dynamic Fire Particle Layer -->
+            <canvas id="fireCanvas" class="absolute inset-0 pointer-events-none z-0"></canvas>
+        </div>
+
+        <!-- HUD / BẢNG TRẠNG THÁI CHIẾN ĐẤU (TOP OVERLAY) -->
+        <div class="relative z-10 w-full p-3 md:p-5 flex justify-between items-start gap-2 md:gap-8 bg-gradient-to-b from-black/80 via-black/40 to-transparent">
+            <!-- WARRIOR STATUS (LEFT) -->
+            <div class="w-1/2 max-w-xs md:max-w-sm glass-panel p-2.5 md:p-3 rounded-xl border-l-4 border-amber-500">
+                <div class="flex justify-between items-center mb-1">
+                    <span class="font-cinzel text-amber-400 font-extrabold text-xs md:text-base tracking-wide flex items-center gap-1.5">
+                        <i class="fa-solid fa-user-ninja"></i> NỮ CHIẾN BINH
+                    </span>
+                    <span id="warriorHpText" class="text-xs font-bold text-amber-200">10 / 10 MẠNG</span>
+                </div>
+                <!-- Health Bar -->
+                <div class="w-full bg-slate-950/80 rounded-full h-3 md:h-4 border border-amber-900/50 overflow-hidden p-0.5">
+                    <div id="warriorHpBar" class="hp-bar-fill bg-gradient-to-r from-amber-600 via-amber-400 to-yellow-300 h-full rounded-full w-full"></div>
+                </div>
+                <!-- Lives Icons (10 Hearts/Shields) -->
+                <div id="warriorLivesIcons" class="flex flex-wrap gap-1 mt-1.5 text-amber-400 text-xs md:text-sm">
+                    <!-- Dynamic icons populated via JS -->
+                </div>
+            </div>
+
+            <!-- VS BADGE -->
+            <div class="hidden sm:flex flex-col items-center justify-center font-cinzel font-black text-amber-500 text-lg md:text-2xl drop-shadow-[0_2px_10px_rgba(239,68,68,0.8)]">
+                <span class="bg-red-950/90 text-red-500 px-3 py-1 rounded-full border border-red-700/60 shadow-inner">VS</span>
+            </div>
+
+            <!-- DRAGON STATUS (RIGHT) -->
+            <div class="w-1/2 max-w-xs md:max-w-sm glass-panel p-2.5 md:p-3 rounded-xl border-r-4 border-red-600 text-right">
+                <div class="flex justify-between items-center mb-1 flex-row-reverse">
+                    <span class="font-cinzel text-red-500 font-extrabold text-xs md:text-base tracking-wide flex items-center gap-1.5">
+                        RỒNG ĐỎ 7 ĐẦU <i class="fa-solid fa-dragon"></i>
+                    </span>
+                    <span id="dragonHpText" class="text-xs font-bold text-red-200">10 / 10 MẠNG</span>
+                </div>
+                <!-- Health Bar -->
+                <div class="w-full bg-slate-950/80 rounded-full h-3 md:h-4 border border-red-900/50 overflow-hidden p-0.5 flex justify-end">
+                    <div id="dragonHpBar" class="hp-bar-fill bg-gradient-to-r from-orange-600 via-red-600 to-red-500 h-full rounded-full w-full"></div>
+                </div>
+                <!-- Lives Icons -->
+                <div id="dragonLivesIcons" class="flex flex-wrap justify-end gap-1 mt-1.5 text-red-500 text-xs md:text-sm">
+                    <!-- Dynamic icons populated via JS -->
+                </div>
+            </div>
+        </div>
+
+        <!-- STAGE / ARENA: CHARACTERS CONTAINER -->
+        <div class="relative z-10 flex-1 flex justify-between items-end px-6 md:px-16 pb-4 md:pb-8 pointer-events-none">
+            
+            <!-- WARRIOR CHARACTER (LEFT) -->
+            <div id="warriorSpriteContainer" class="relative w-36 sm:w-48 md:w-64 aspect-square flex items-end justify-center warrior-idle transition-transform">
+                <img id="warriorImg" src="" class="hidden max-h-full max-w-full object-contain filter drop-shadow-[0_10px_15px_rgba(0,0,0,0.8)]" alt="Nữ chiến binh" />
+                <!-- SVG Canvas Graphic Render (Fallback & High quality default) -->
+                <canvas id="warriorCanvas" class="w-full h-full drop-shadow-[0_8px_16px_rgba(0,0,0,0.9)]"></canvas>
+            </div>
+
+            <!-- DRAGON CHARACTER (RIGHT) -->
+            <div id="dragonSpriteContainer" class="relative w-44 sm:w-60 md:w-80 aspect-square flex items-end justify-center dragon-idle transition-transform">
+                <img id="dragonImg" src="" class="hidden max-h-full max-w-full object-contain filter drop-shadow-[0_10px_20px_rgba(0,0,0,0.9)]" alt="Rồng đỏ 7 đầu" />
+                <!-- SVG Canvas Graphic Render (Fallback & High quality default) -->
+                <canvas id="dragonCanvas" class="w-full h-full drop-shadow-[0_10px_20px_rgba(0,0,0,0.9)]"></canvas>
+            </div>
+        </div>
+
+        <!-- QUESTION & INTERACTION PANEL (BOTTOM OVERLAY) -->
+        <div id="quizPanel" class="relative z-20 w-full glass-panel border-t-2 border-amber-500/50 p-3 sm:p-4 md:p-5 flex flex-col justify-between transition-all">
+            <!-- Question Title & Counter -->
+            <div class="flex justify-between items-center mb-2 pb-2 border-b border-amber-900/40">
+                <span id="questionCounter" class="text-xs md:text-sm font-bold text-amber-400 bg-amber-950/80 px-2.5 py-1 rounded-md border border-amber-700/50">
+                    CÂU HỎI 1 / 10
+                </span>
+                <span id="questionTypeBadge" class="text-xs font-semibold text-slate-300 bg-slate-800/80 px-2 py-0.5 rounded border border-slate-700">
+                    Chọn 1 đáp án
+                </span>
+            </div>
+
+            <!-- Question Text -->
+            <h3 id="questionText" class="text-sm md:text-base lg:text-lg font-semibold text-slate-100 mb-3 min-h-[2.5rem] flex items-center leading-relaxed">
+                Đang tải câu hỏi...
+            </h3>
+
+            <!-- Options Grid -->
+            <div id="optionsGrid" class="grid grid-cols-1 md:grid-cols-2 gap-2 my-1">
+                <!-- Dynamic options buttons/checkboxes -->
+            </div>
+
+            <!-- Explanation & Feedback Alert Box -->
+            <div id="feedbackBox" class="hidden mt-3 p-3 rounded-lg text-xs md:text-sm font-medium border transition-all">
+                <div id="feedbackTitle" class="font-extrabold text-sm mb-1 flex items-center gap-2"></div>
+                <div id="feedbackExplanation" class="text-slate-200 leading-relaxed italic"></div>
+            </div>
+
+            <!-- Action Controls -->
+            <div class="flex justify-end items-center gap-3 mt-3">
+                <button id="submitBtn" onclick="submitAnswer()" class="px-6 py-2.5 rounded-lg bg-gradient-to-r from-amber-600 to-amber-500 hover:from-amber-500 hover:to-amber-400 text-black font-extrabold text-sm tracking-wider uppercase shadow-lg glow-gold active:scale-95 transition">
+                    Xác Nhận Đáp Án
+                </button>
+                <button id="nextBtn" onclick="nextQuestion()" class="hidden px-6 py-2.5 rounded-lg bg-gradient-to-r from-red-700 to-red-600 hover:from-red-600 hover:to-red-500 text-white font-extrabold text-sm tracking-wider uppercase shadow-lg active:scale-95 transition">
+                    Tiếp Tục Trận Chiến <i class="fa-solid fa-arrow-right ml-1"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- OVERLAY MODAL: START SCREEN -->
+        <div id="startScreen" class="absolute inset-0 z-40 bg-slate-950/95 backdrop-blur-lg flex flex-col items-center justify-center p-6 text-center">
+            <div class="max-w-2xl bg-amber-950/30 border border-amber-600/40 p-6 md:p-10 rounded-2xl shadow-2xl relative overflow-hidden">
+                <div class="absolute -top-10 -right-10 opacity-10 text-9xl text-red-500"><i class="fa-solid fa-dragon"></i></div>
+                
+                <h1 class="font-cinzel text-2xl sm:text-4xl md:text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-amber-400 via-orange-400 to-red-500 mb-3 tracking-wide">
+                    NỮ CHIẾN BINH VS RỒNG ĐỎ
+                </h1>
+                <p class="text-amber-200/80 text-xs sm:text-sm md:text-base mb-6 leading-relaxed">
+                    Trận chiến huyền thoại quyết định bởi **10 câu hỏi chân lý**. Mỗi câu trả lời đúng giúp Nữ Chiến Binh tung cú đá giáng trả Rồng Đỏ 7 đầu. Mỗi sai lầm sẽ khiến cô hứng chịu luồng lửa thiêu rụi!
+                </p>
+
+                <div class="grid grid-cols-2 gap-4 max-w-md mx-auto mb-6 text-left text-xs text-amber-300/90 bg-black/50 p-4 rounded-xl border border-amber-900/40">
+                    <div class="flex items-center gap-2"><i class="fa-solid fa-shield-halved text-amber-400"></i> Chiến binh: 10 Mạng</div>
+                    <div class="flex items-center gap-2"><i class="fa-solid fa-skull text-red-500"></i> Rồng 7 Đầu: 10 Mạng</div>
+                    <div class="flex items-center gap-2"><i class="fa-solid fa-bolt text-yellow-400"></i> Đúng: Tấn công Rồng</div>
+                    <div class="flex items-center gap-2"><i class="fa-solid fa-fire text-orange-500"></i> Sai: Bị phun lửa</div>
+                </div>
+
+                <div class="flex flex-wrap justify-center gap-4">
+                    <button onclick="startGame()" class="px-8 py-3.5 rounded-xl bg-gradient-to-r from-amber-500 via-orange-500 to-red-600 hover:from-amber-400 hover:to-red-500 text-black font-extrabold text-base md:text-lg tracking-wider uppercase shadow-xl glow-gold active:scale-95 transition flex items-center gap-2">
+                        <i class="fa-solid fa-play"></i> BẮT ĐẦU CHIẾN
+                    </button>
+                    <button onclick="playTrailerModal()" class="px-5 py-3.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold text-sm border border-slate-600 transition flex items-center gap-2">
+                        <i class="fa-solid fa-film text-amber-400"></i> Xem Trailer
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- OVERLAY MODAL: GAME OVER (WIN / LOSE) -->
+        <div id="gameOverModal" class="hidden absolute inset-0 z-50 bg-slate-950/95 backdrop-blur-xl flex flex-col items-center justify-center p-6 text-center">
+            <div id="gameOverBox" class="max-w-xl w-full glass-panel p-6 sm:p-8 rounded-2xl border-2 shadow-2xl relative">
+                <!-- Result Image Reference Container -->
+                <div class="w-full h-44 sm:h-56 mb-4 rounded-xl overflow-hidden border border-amber-500/30 bg-black/60 flex items-center justify-center relative">
+                    <img id="resultReferenceImg" src="" class="hidden w-full h-full object-cover" alt="Kết quả trận chiến" />
+                    <canvas id="resultCanvas" class="w-full h-full"></canvas>
+                </div>
+
+                <h2 id="resultTitle" class="font-cinzel text-2xl sm:text-3xl font-black mb-2"></h2>
+                <p id="resultDesc" class="text-xs sm:text-sm text-slate-300 mb-4"></p>
+
+                <!-- Stats Summary -->
+                <div class="grid grid-cols-3 gap-2 bg-black/60 p-3 rounded-lg border border-amber-900/30 mb-6 text-xs sm:text-sm">
+                    <div>
+                        <div class="text-slate-400">Đúng</div>
+                        <div id="statCorrect" class="font-bold text-amber-400 text-lg">0</div>
+                    </div>
+                    <div>
+                        <div class="text-slate-400">Sai</div>
+                        <div id="statWrong" class="font-bold text-red-400 text-lg">0</div>
+                    </div>
+                    <div>
+                        <div class="text-slate-400">Mạng Còn</div>
+                        <div id="statLives" class="font-bold text-green-400 text-lg">0</div>
+                    </div>
+                </div>
+
+                <button onclick="restartGame()" class="px-8 py-3 rounded-xl bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-400 hover:to-orange-500 text-black font-extrabold text-base tracking-wider uppercase shadow-lg active:scale-95 transition">
+                    <i class="fa-solid fa-rotate-right mr-2"></i> CHƠI LẠI TRẬN ĐẤU
+                </button>
+            </div>
+        </div>
+
+        <!-- OVERLAY MODAL: MEDIA / REFERENCE IMAGES MANAGEMENT -->
+        <div id="mediaModal" class="hidden absolute inset-0 z-50 bg-black/90 backdrop-blur-md flex items-center justify-center p-4">
+            <div class="max-w-lg w-full bg-slate-900 border border-amber-600/40 p-5 rounded-xl shadow-2xl text-left max-h-[90vh] overflow-y-auto">
+                <div class="flex justify-between items-center mb-4 pb-2 border-b border-slate-700">
+                    <h3 class="font-cinzel font-bold text-amber-400 text-lg"><i class="fa-solid fa-images"></i> Quản Lý Ảnh Tham Chiếu & Media</h3>
+                    <button onclick="closeMediaModal()" class="text-slate-400 hover:text-white text-xl"><i class="fa-solid fa-xmark"></i></button>
+                </div>
+
+                <p class="text-xs text-slate-300 mb-4">Bạn có thể dùng hình dựng Canvas 2D sẵn có hoặc tải/dán URL 3 bức ảnh tham chiếu thực tế của bạn:</p>
+
+                <!-- Ref Image 1 -->
+                <div class="mb-3 bg-slate-950 p-3 rounded border border-slate-800">
+                    <label class="block text-xs font-bold text-amber-300 mb-1">1. Ảnh Trạng Thái Bình Thường (Cả 2 nhân vật):</label>
+                    <input type="file" accept="image/*" onchange="handleFileUpload(event, 'idle')" class="block w-full text-xs text-slate-400 file:mr-2 file:py-1 file:px-2 file:rounded file:border-0 file:bg-amber-900 file:text-amber-200 hover:file:bg-amber-800 mb-1" />
+                    <input type="text" id="urlRefIdle" placeholder="Hoặc dán URL ảnh tại đây..." class="w-full text-xs bg-slate-900 border border-slate-700 p-1.5 rounded text-slate-200" onchange="setRefUrl('idle', this.value)" />
+                </div>
+
+                <!-- Ref Image 2 -->
+                <div class="mb-3 bg-slate-950 p-3 rounded border border-slate-800">
+                    <label class="block text-xs font-bold text-red-400 mb-1">2. Ảnh Cô Gái Thua Cuộc (Defeat):</label>
+                    <input type="file" accept="image/*" onchange="handleFileUpload(event, 'lose')" class="block w-full text-xs text-slate-400 file:mr-2 file:py-1 file:px-2 file:rounded file:border-0 file:bg-red-900 file:text-red-200 hover:file:bg-red-800 mb-1" />
+                    <input type="text" id="urlRefLose" placeholder="Hoặc dán URL ảnh tại đây..." class="w-full text-xs bg-slate-900 border border-slate-700 p-1.5 rounded text-slate-200" onchange="setRefUrl('lose', this.value)" />
+                </div>
+
+                <!-- Ref Image 3 -->
+                <div class="mb-3 bg-slate-950 p-3 rounded border border-slate-800">
+                    <label class="block text-xs font-bold text-green-400 mb-1">3. Ảnh Cô Gái Thắng (Victory):</label>
+                    <input type="file" accept="image/*" onchange="handleFileUpload(event, 'win')" class="block w-full text-xs text-slate-400 file:mr-2 file:py-1 file:px-2 file:rounded file:border-0 file:bg-green-900 file:text-green-200 hover:file:bg-green-800 mb-1" />
+                    <input type="text" id="urlRefWin" placeholder="Hoặc dán URL ảnh tại đây..." class="w-full text-xs bg-slate-900 border border-slate-700 p-1.5 rounded text-slate-200" onchange="setRefUrl('win', this.value)" />
+                </div>
+
+                <!-- Trailer Video -->
+                <div class="mb-4 bg-slate-950 p-3 rounded border border-slate-800">
+                    <label class="block text-xs font-bold text-amber-400 mb-1">4. Video Trailer Game (.mp4):</label>
+                    <input type="file" accept="video/*" onchange="handleVideoUpload(event)" class="block w-full text-xs text-slate-400 file:mr-2 file:py-1 file:px-2 file:rounded file:border-0 file:bg-slate-800 file:text-slate-200 mb-1" />
+                </div>
+
+                <div class="flex justify-end">
+                    <button onclick="closeMediaModal()" class="px-4 py-2 bg-amber-600 hover:bg-amber-500 text-black font-bold text-xs rounded">Lưu & Đóng</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- OVERLAY MODAL: TRAILER VIDEO -->
+        <div id="trailerModal" class="hidden absolute inset-0 z-50 bg-black/95 flex flex-col items-center justify-center p-4">
+            <div class="relative w-full max-w-3xl aspect-video bg-black rounded-lg overflow-hidden border border-amber-600/50">
+                <video id="trailerVideo" class="w-full h-full" controls>
+                    <source src="" type="video/mp4">
+                    Trình duyệt không hỗ trợ video.
+                </video>
+                <button onclick="closeTrailerModal()" class="absolute top-2 right-2 bg-black/80 text-white px-3 py-1 rounded text-xs hover:bg-red-600 font-bold z-10">
+                    <i class="fa-solid fa-xmark"></i> Bỏ Qua / Đóng
+                </button>
+            </div>
+        </div>
+
+        <!-- OVERLAY MODAL: GITHUB PAGES PUBLISH GUIDE -->
+        <div id="githubModal" class="hidden absolute inset-0 z-50 bg-black/90 backdrop-blur-md flex items-center justify-center p-4">
+            <div class="max-w-xl w-full bg-slate-900 border border-red-600/50 p-6 rounded-2xl shadow-2xl text-left max-h-[85vh] overflow-y-auto">
+                <div class="flex justify-between items-center mb-4 pb-2 border-b border-slate-700">
+                    <h3 class="font-cinzel font-bold text-red-400 text-lg flex items-center gap-2">
+                        <i class="fa-brands fa-github"></i> Hướng Dẫn Xuất Bản Lên GitHub Pages
+                    </h3>
+                    <button onclick="closeGithubGuide()" class="text-slate-400 hover:text-white text-xl"><i class="fa-solid fa-xmark"></i></button>
+                </div>
+
+                <ol class="list-decimal list-inside space-y-3 text-xs md:text-sm text-slate-300 leading-relaxed">
+                    <li class="bg-slate-950 p-3 rounded border border-slate-800">
+                        <strong class="text-amber-400">Bước 1: Tải file game</strong><br>
+                        Lưu toàn bộ mã nguồn file này thành tên: <code class="bg-black px-1.5 py-0.5 rounded text-amber-300">index.html</code>.
+                    </li>
+                    <li class="bg-slate-950 p-3 rounded border border-slate-800">
+                        <strong class="text-amber-400">Bước 2: Tạo Repository trên GitHub</strong><br>
+                        Đăng nhập GitHub &rarr; Bấm <strong>New Repository</strong> &rarr; Đặt tên kho lưu trữ (ví dụ: <code class="bg-black px-1.5 py-0.5 rounded text-amber-300">nu-chien-binh-vs-rong-do</code>) &rarr; Chọn <strong>Public</strong> &rarr; Bấm <strong>Create repository</strong>.
+                    </li>
+                    <li class="bg-slate-950 p-3 rounded border border-slate-800">
+                        <strong class="text-amber-400">Bước 3: Tải file index.html lên</strong><br>
+                        Bấm nút <strong>uploading an existing file</strong> &rarr; Kéo thả file <code class="bg-black px-1.5 py-0.5 rounded text-amber-300">index.html</code> (và các file ảnh nếu có) &rarr; Bấm <strong>Commit changes</strong>.
+                    </li>
+                    <li class="bg-slate-950 p-3 rounded border border-slate-800">
+                        <strong class="text-amber-400">Bước 4: Bật GitHub Pages để có Link Chơi Game</strong><br>
+                        Vào mục <strong>Settings</strong> của Repo &rarr; Chọn tab <strong>Pages</strong> ở cột trái &rarr; Tại <em>Build and deployment / Branch</em>, chọn <strong>main</strong> (hoặc master) &rarr; Bấm <strong>Save</strong>.
+                    </li>
+                </ol>
+
+                <p class="mt-4 text-xs text-green-400 font-semibold bg-green-950/40 p-2.5 rounded border border-green-800">
+                    <i class="fa-solid fa-check-circle mr-1"></i> Sau 1-2 phút, GitHub sẽ cấp cho bạn một đường link đường dẫn (URL) để gửi cho bất kỳ ai chơi game trực tiếp trên trình duyệt!
+                </p>
+
+                <div class="mt-4 flex justify-end">
+                    <button onclick="closeGithubGuide()" class="px-5 py-2 bg-red-700 hover:bg-red-600 text-white font-bold text-xs rounded">Đã Hiểu</button>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- FOOTER CREDIT -->
+    <footer class="w-full text-center py-2 text-[11px] text-slate-500 font-medium">
+        Game Tương Tác 2D Fantasy &bull; Nữ Chiến Binh & Rồng Đỏ 7 Đầu 10 Sừng &bull; HTML5 & Web Audio API
+    </footer>
+
+    <!-- GAME LOGIC SCRIPT -->
+    <script>
+        /* ==========================================================================
+           1. QUESTION DECK DATA (10 QUESTIONS WITH MULTI & SINGLE SELECTION)
+           ========================================================================== */
+        const originalQuestions = [
+            {
+                type: "single",
+                question: "Những ngày đầu của thời kỳ cứu rỗi, Ngôi lời chân lý được truyền giảng ở đâu?",
+                options: [
+                    "Đền tạm tức trời",
+                    "Trụ sở chính Gwa-cheon",
+                    "Dưới tầng hầm chung cư cũ",
+                    "Vòm trời, sàn đất, cây cối chung quanh trên núi"
+                ],
+                correct: [3],
+                explanation: "Bởi tình yêu thương ban đầu mà bản thân được kêu gọi trong lịch sử cứu rỗi đang mở cửa. -> Giăng 6:65 “Ngài lại nói: “Vì vậy, Ta đã bảo các con rằng nếu Cha không ban cho thì không ai có thể đến với Ta được.”"
+            },
+            {
+                type: "single",
+                question: "Bản thân ngày càng phạm tội và không muốn sửa đổi là do đâu?",
+                options: [
+                    "Do NMSM không quan tâm, anh em không giúp đỡ bản thân tín ngưỡng",
+                    "Do bản thân không hạnh phúc khi nhận Ngôi lời, thấy thế gian đầy hài cốt vẫn tốt đẹp hơn",
+                    "Do Satan liên tục cám dỗ đúng sở thích bản thân thì chịu thua",
+                    "Do anh em tín hữu dần nguội lạnh, bản thân cũng mất nhiệt, không muốn phát triển TN thêm",
+                    "Do yêu thích và gian dâm với những thứ thuộc thế gian. Tâm trí dần không còn Ngôi lời"
+                ],
+                correct: [4],
+                explanation: "Nếu chúng ta thuộc về điều thiện. Bất cứ hoàn cảnh nào, cũng nhìn nhận bản thân và gìn giữ điều thiện. Không đổ lỗi cho Satan hay ai khác. Ngôi lời ban cho chúng ta là để chiến thắng, sửa chữa điều sai lầm và sai trái trong bản thân, là sinh lại giống với Đức Chúa Trời."
+            },
+            {
+                type: "multiple",
+                question: "Nội dung chính của KH 12 là gì?",
+                options: [
+                    "3 nhân vật xuất hiện ở cùng hiện trường",
+                    "Sự kiện quan trọng là sau chiến tranh thế giới thứ 2",
+                    "Trận chiến thứ 2 ở thời Chúa trở lại",
+                    "Kết thúc thời bội đạo - bắt đầu thời huỷ diệt",
+                    "Thời điểm “bây giờ” chấm dứt thời huỷ diệt, bắt đầu thời cứu rỗi"
+                ],
+                correct: [0, 2, 4],
+                explanation: "KH 12 bao gồm các nội dung cốt lõi: 3 nhân vật xuất hiện ở cùng hiện trường, trận chiến thứ 2 ở thời Chúa trở lại, và thời điểm 'bây giờ' chấm dứt thời hủy diệt, bắt đầu thời cứu rỗi."
+            },
+            {
+                type: "multiple",
+                question: "Chúng ta báo hiếu và giúp sức vì MTGU tức là làm gì?",
+                options: [
+                    "Hiệp lòng và tiên phong",
+                    "Truyền đạo và đóng ấn",
+                    "Ngủ đủ 7 tiếng, ăn đủ 3 bữa healthy, tập thể thao",
+                    "Dành tối thiểu 1/10 thời gian trong ngày cho đóng ấn, phụng sự",
+                    "Truyền đạo quên ăn, quên ngủ",
+                    "3h sáng cũng phải hoàn thành báo cáo, sứ mệnh lên NMSM",
+                    "Lập kế hoạch, chắt chiu thời gian lên hiện trường truyền đạo",
+                    "Bay sang Hàn để cập nhật tin tức nhanh nhất",
+                    "Kito cho Thầy rồi đi làm là hết sức hết lòng"
+                ],
+                correct: [0, 1, 2, 3, 6],
+                explanation: "Giúp sức vì MTGU là Hiệp lòng & tiên phong, Truyền đạo & đóng ấn, giữ gìn sức khỏe (ăn ngủ tập thể thao đầy đủ), dành thời gian phụng sự và chắt chiu thời gian lên hiện trường."
+            },
+            {
+                type: "multiple",
+                question: "Thế gian cũng có Kinh Thánh nhưng vì sao vẫn không hiểu biết Chân lý? Vẫn sống cách chúng ta ~ 2000 năm?",
+                options: [
+                    "Vì chúng ta may mắn hơn",
+                    "Vì không có MTGU chân thật làm chứng Ngôi lời khải thị",
+                    "Vì không được Đức Chúa Trời đồng hành, ban cho sự thấu hiểu"
+                ],
+                correct: [1, 2],
+                explanation: "Thế gian không hiểu biết Chân lý vì thiếu MTGU chân thật làm chứng Ngôi lời khải thị và không được Đức Chúa Trời đồng hành ban sự thấu hiểu."
+            },
+            {
+                type: "single",
+                question: "Lý do gọi Đền tạm của 7 sứ giả là “trời”?",
+                options: [
+                    "Nơi được trang trí như vòm trời, có 7 ngôi sao phía trước",
+                    "Nơi có 7 ngôi sao tức 7 sứ giả do ĐCJ lựa chọn",
+                    "Giống như trong xác thịt, nơi nào nhiều sao = thánh đồ nhất thì là trời"
+                ],
+                correct: [1],
+                explanation: "Đền tạm của 7 sứ giả được gọi là 'trời' vì đó là nơi có 7 ngôi sao tượng trưng cho 7 sứ giả do Đức Chúa Trời lựa chọn."
+            },
+            {
+                type: "single",
+                question: "MTGU là một nông dân nhưng luôn xuất hiện với bộ vest thẳng tắp, tóc vuốt gọn gàng, gương mặt tươi sáng. Dù làm nông nghiệp, chiến đấu, truyền đạo hay bất cứ việc gì cũng hết mình. ⭐️ Mang tinh thần như MTGU. Bản thân sẽ làm gì?",
+                options: [
+                    "Ưu tiên truyền đạo, ngoại hình sao cũng được 🤕🤯🥴",
+                    "Đi làm chưa xong việc, nhưng dành thời gian trên cty học KH cho tỉnh táo",
+                    "Nỗ lực tập trung làm xong task cty, bài tập ở trường để có thời gian đóng ấn, truyền đạo",
+                    "Ngày ngủ 4-5 tiếng để truyền đạo nhiều giờ hơn",
+                    "Đợi sát ngày thi các kỳ mới học vội vã"
+                ],
+                correct: [2],
+                explanation: "Mang tinh thần MTGU là phải trách nhiệm, nỗ lực tập trung làm xong công việc ở công ty/trường học để chủ động thời gian thực hiện đóng ấn, truyền đạo."
+            },
+            {
+                type: "single",
+                question: "Là người mang sứ mệnh do ĐCT dựng nên thì thánh linh sẽ thông qua người đấy để làm việc. Thế nên, mọi việc NMSM nói đều sẽ đúng, nếu bản thân cảm thấy không hợp lý là do bản thân suy nghĩ cá nhân.",
+                options: [
+                    "Amen",
+                    "Nomen"
+                ],
+                correct: [1],
+                explanation: "Nomen! Chúng ta tín ngưỡng theo Ngôi lời của Đức Chúa Trời. Không phải tín ngưỡng theo lời con người. Không nên quá tin vào NMSM mà quên mất việc kiểm chứng bằng Kinh Thánh. Điều quan trọng trước hết là giữ vững tín ngưỡng bản thân với ĐCT."
+            },
+            {
+                type: "single",
+                question: "Thực thể 42 tháng huỷ diệt là thời gian nào?",
+                options: [
+                    "14.03.1980 - 14.03.1984",
+                    "08.1980 - 04.1984",
+                    "09.1980 - 04.1984",
+                    "10.1980 - 04.1985"
+                ],
+                correct: [2],
+                explanation: "Thực thể 42 tháng hủy diệt diễn ra từ tháng 09.1980 đến tháng 04.1984."
+            },
+            {
+                type: "single",
+                question: "Thực thể “một kỳ, hai kỳ và nửa kỳ” khi người nữ trốn vào hoang mạc là thời gian nào?",
+                options: [
+                    "14.03.1980 - 14.03.1984",
+                    "08.1980 - 04.1984",
+                    "09.1980 - 04.1984",
+                    "10.1980 - 04.1984"
+                ],
+                correct: [3],
+                explanation: "Thực thể 'một kỳ, hai kỳ và nửa kỳ' khi người nữ trốn vào hoang mạc là khoảng thời gian từ tháng 10.1980 đến tháng 04.1984."
+            }
+        ];
+
+        /* ==========================================================================
+           2. GAME STATE VARIABLES
+           ========================================================================== */
+        let currentQuestions = [];
+        let currentQuestionIdx = 0;
+        let warriorLives = 10;
+        let dragonLives = 10;
+        let correctCount = 0;
+        let wrongCount = 0;
+        let isAnimating = false;
+        let audioCtx = null;
+        let bgmOsc = null;
+        let bgmGain = null;
+        let isBgmPlaying = false;
+
+        // Custom Media Store
+        const refMedia = {
+            idle: '',
+            lose: '',
+            win: '',
+            trailer: ''
+        };
+
+        /* ==========================================================================
+           3. CANVAS RENDERING (GRAPHICS & PARTICLE EFFECTS)
+           ========================================================================== */
+        // Draw Warrior SVG-Style Canvas
+        function drawWarriorCanvas() {
+            const cvs = document.getElementById('warriorCanvas');
+            if (!cvs) return;
+            const ctx = cvs.getContext('2d');
+            cvs.width = 300; cvs.height = 300;
+            ctx.clearRect(0, 0, 300, 300);
+
+            // Aura
+            const auraGrd = ctx.createRadialGradient(120, 160, 10, 120, 160, 100);
+            auraGrd.addColorStop(0, 'rgba(245, 158, 11, 0.3)');
+            auraGrd.addColorStop(1, 'rgba(0,0,0,0)');
+            ctx.fillStyle = auraGrd;
+            ctx.beginPath(); ctx.arc(120, 160, 100, 0, Math.PI*2); ctx.fill();
+
+            // Long Black Hair (Back)
+            ctx.fillStyle = '#0a0a0f';
+            ctx.beginPath();
+            ctx.moveTo(110, 70);
+            ctx.quadraticCurveTo(50, 120, 45, 230);
+            ctx.quadraticCurveTo(110, 240, 130, 170);
+            ctx.fill();
+
+            // Cape (Orange-Gold)
+            ctx.fillStyle = '#ea580c';
+            ctx.beginPath();
+            ctx.moveTo(110, 120);
+            ctx.quadraticCurveTo(60, 160, 50, 250);
+            ctx.lineTo(120, 240);
+            ctx.fill();
+
+            // Dark Blue Armor Body
+            ctx.fillStyle = '#1e3a8a';
+            ctx.beginPath();
+            ctx.moveTo(100, 110); ctx.lineTo(140, 110);
+            ctx.lineTo(135, 190); ctx.lineTo(105, 190);
+            ctx.closePath(); ctx.fill();
+
+            // Armor Gold Trim
+            ctx.strokeStyle = '#f59e0b';
+            ctx.lineWidth = 4;
+            ctx.strokeRect(105, 115, 30, 40);
+
+            // Head & Skin
+            ctx.fillStyle = '#fca5a5';
+            ctx.beginPath(); ctx.arc(120, 80, 22, 0, Math.PI*2); ctx.fill();
+
+            // Long Black Hair (Front/Side)
+            ctx.fillStyle = '#0f172a';
+            ctx.beginPath();
+            ctx.moveTo(100, 65);
+            ctx.quadraticCurveTo(120, 50, 140, 65);
+            ctx.quadraticCurveTo(110, 75, 100, 130);
+            ctx.fill();
+
+            // Fighting Stance Arms (Defense pose)
+            ctx.strokeStyle = '#1e3a8a';
+            ctx.lineWidth = 12;
+            ctx.lineCap = 'round';
+            ctx.beginPath();
+            ctx.moveTo(110, 125); ctx.lineTo(145, 120); ctx.lineTo(135, 95); // Front fist
+            ctx.stroke();
+
+            // Legs / Boots
+            ctx.strokeStyle = '#0f172a';
+            ctx.lineWidth = 14;
+            ctx.beginPath();
+            ctx.moveTo(110, 190); ctx.lineTo(95, 260); // Back leg
+            ctx.moveTo(130, 190); ctx.lineTo(145, 260); // Front leg
+            ctx.stroke();
+
+            // Sword / Weapon Sparkle
+            ctx.strokeStyle = '#fbbf24';
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+            ctx.moveTo(145, 95); ctx.lineTo(185, 55);
+            ctx.stroke();
+        }
+
+        // Draw 7-Headed 10-Horned Red Dragon
+        function drawDragonCanvas() {
+            const cvs = document.getElementById('dragonCanvas');
+            if (!cvs) return;
+            const ctx = cvs.getContext('2d');
+            cvs.width = 380; cvs.height = 380;
+            ctx.clearRect(0, 0, 380, 380);
+
+            // Body (Massive Red)
+            ctx.fillStyle = '#991b1b';
+            ctx.beginPath();
+            ctx.ellipse(240, 250, 90, 70, -0.2, 0, Math.PI*2);
+            ctx.fill();
+
+            // Yellow-Brown Belly
+            ctx.fillStyle = '#b45309';
+            ctx.beginPath();
+            ctx.ellipse(210, 260, 50, 45, -0.2, 0, Math.PI*2);
+            ctx.fill();
+
+            // 7 Dragon Necks and Heads
+            const headPositions = [
+                {x: 120, y: 110, neckX: 200, neckY: 210},
+                {x: 145, y: 85,  neckX: 210, neckY: 200},
+                {x: 175, y: 70,  neckX: 220, neckY: 195},
+                {x: 210, y: 65,  neckX: 235, neckY: 190}, // Center Head
+                {x: 245, y: 75,  neckX: 250, neckY: 195},
+                {x: 275, y: 95,  neckX: 260, neckY: 205},
+                {x: 300, y: 125, neckX: 270, neckY: 215}
+            ];
+
+            // Render Necks
+            headPositions.forEach((pos) => {
+                ctx.strokeStyle = '#7f1d1d';
+                ctx.lineWidth = 18;
+                ctx.lineCap = 'round';
+                ctx.beginPath();
+                ctx.moveTo(pos.neckX, pos.neckY);
+                ctx.quadraticCurveTo((pos.x + pos.neckX)/2 - 15, (pos.y + pos.neckY)/2, pos.x, pos.y);
+                ctx.stroke();
+            });
+
+            // 10 Horns distributed among heads
+            const hornCoords = [
+                [ {dx:-10, dy:-15}, {dx:5, dy:-18} ], // Head 1 (2 horns)
+                [ {dx:-8, dy:-16} ],                 // Head 2 (1 horn)
+                [ {dx:-8, dy:-16}, {dx:6, dy:-16} ],  // Head 3 (2 horns)
+                [ {dx:-5, dy:-20} ],                 // Head 4 (1 horn)
+                [ {dx:-8, dy:-16}, {dx:6, dy:-16} ],  // Head 5 (2 horns)
+                [ {dx:5, dy:-16} ],                  // Head 6 (1 horn)
+                [ {dx:8, dy:-15} ]                   // Head 7 (1 horn) -> Total 10 Horns!
+            ];
+
+            // Render Heads, Glowing Eyes, and Horns
+            headPositions.forEach((pos, idx) => {
+                // Head Base
+                ctx.fillStyle = '#dc2626';
+                ctx.beginPath();
+                ctx.arc(pos.x, pos.y, 16, 0, Math.PI*2);
+                ctx.fill();
+
+                // Snout facing left
+                ctx.beginPath();
+                ctx.moveTo(pos.x, pos.y - 10);
+                ctx.lineTo(pos.x - 22, pos.y + 2);
+                ctx.lineTo(pos.x, pos.y + 12);
+                ctx.fill();
+
+                // Glowing Yellow-Orange Eye
+                ctx.fillStyle = '#fbbf24';
+                ctx.beginPath();
+                ctx.arc(pos.x - 6, pos.y - 3, 4, 0, Math.PI*2);
+                ctx.fill();
+
+                // Horns (Dark Gold / Bone)
+                const horns = hornCoords[idx];
+                horns.forEach(h => {
+                    ctx.strokeStyle = '#d97706';
+                    ctx.lineWidth = 4;
+                    ctx.beginPath();
+                    ctx.moveTo(pos.x, pos.y - 10);
+                    ctx.lineTo(pos.x + h.dx, pos.y + h.dy);
+                    ctx.stroke();
+                });
+            });
+        }
+
+        // Fire Particles Background Animation
+        let fireParticles = [];
+        function initFireParticles() {
+            const cvs = document.getElementById('fireCanvas');
+            if (!cvs) return;
+            cvs.width = cvs.offsetWidth; cvs.height = cvs.offsetHeight;
+            fireParticles = [];
+            for(let i=0; i<35; i++){
+                fireParticles.push({
+                    x: Math.random() * cvs.width,
+                    y: Math.random() * cvs.height,
+                    r: Math.random() * 3 + 1,
+                    vY: Math.random() * 1.5 + 0.5,
+                    vX: (Math.random() - 0.5) * 0.8,
+                    alpha: Math.random()
+                });
+            }
+        }
+
+        function renderFireParticles() {
+            const cvs = document.getElementById('fireCanvas');
+            if (!cvs || !cvs.getContext) return;
+            const ctx = cvs.getContext('2d');
+            ctx.clearRect(0,0, cvs.width, cvs.height);
+
+            fireParticles.forEach(p => {
+                p.y -= p.vY;
+                p.x += p.vX;
+                if(p.y < 0) {
+                    p.y = cvs.height;
+                    p.x = Math.random() * cvs.width;
+                }
+                ctx.fillStyle = `rgba(245, 158, 11, ${p.alpha})`;
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, p.r, 0, Math.PI*2);
+                ctx.fill();
+            });
+            requestAnimationFrame(renderFireParticles);
+        }
+
+        /* ==========================================================================
+           4. AUDIO SYNTHESIZER (WEB AUDIO API - NO EXTERNAL MP3 DEPENDENCY)
+           ========================================================================== */
+        function initAudio() {
+            if (!audioCtx) {
+                const AudioContext = window.AudioContext || window.webkitAudioContext;
+                audioCtx = new AudioContext();
+            }
+            if (audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+        }
+
+        function playSound(type) {
+            initAudio();
+            if(!audioCtx) return;
+
+            const now = audioCtx.currentTime;
+            if (type === 'correct') {
+                // High Chime
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(523.25, now); // C5
+                osc.frequency.exponentialRampToValueAtTime(880, now + 0.3); // A5
+                gain.gain.setValueAtTime(0.3, now);
+                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.4);
+                osc.connect(gain); gain.connect(audioCtx.destination);
+                osc.start(now); osc.stop(now + 0.4);
+            } 
+            else if (type === 'wrong') {
+                // Deep Flame/Hit Buzz
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(180, now);
+                osc.frequency.linearRampToValueAtTime(60, now + 0.5);
+                gain.gain.setValueAtTime(0.4, now);
+                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.5);
+                osc.connect(gain); gain.connect(audioCtx.destination);
+                osc.start(now); osc.stop(now + 0.5);
+            }
+            else if (type === 'kick') {
+                // Impact Strike
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(250, now);
+                osc.frequency.exponentialRampToValueAtTime(30, now + 0.25);
+                gain.gain.setValueAtTime(0.6, now);
+                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.25);
+                osc.connect(gain); gain.connect(audioCtx.destination);
+                osc.start(now); osc.stop(now + 0.25);
+            }
+            else if (type === 'win') {
+                // Victory Fanfare
+                [440, 554.37, 659.25, 880].forEach((freq, idx) => {
+                    const osc = audioCtx.createOscillator();
+                    const gain = audioCtx.createGain();
+                    osc.frequency.setValueAtTime(freq, now + idx * 0.12);
+                    gain.gain.setValueAtTime(0.3, now + idx * 0.12);
+                    gain.gain.exponentialRampToValueAtTime(0.01, now + idx * 0.12 + 0.4);
+                    osc.connect(gain); gain.connect(audioCtx.destination);
+                    osc.start(now + idx * 0.12); osc.stop(now + idx * 0.12 + 0.4);
+                });
+            }
+        }
+
+        function toggleBGM() {
+            initAudio();
+            if (isBgmPlaying) {
+                stopBGM();
+            } else {
+                startBGM();
+            }
+        }
+
+        function startBGM() {
+            if(!audioCtx) return;
+            try {
+                bgmOsc = audioCtx.createOscillator();
+                bgmGain = audioCtx.createGain();
+                bgmOsc.type = 'sine';
+                bgmOsc.frequency.setValueAtTime(110, audioCtx.currentTime); // Low A drone
+                bgmGain.gain.setValueAtTime(0.08, audioCtx.currentTime);
+                bgmOsc.connect(bgmGain);
+                bgmGain.connect(audioCtx.destination);
+                bgmOsc.start();
+                isBgmPlaying = true;
+                document.getElementById('bgmIcon').className = 'fa-solid fa-volume-high text-amber-400';
+                document.getElementById('bgmText').innerText = 'Nhạc: Bật';
+            } catch(e){}
+        }
+
+        function stopBGM() {
+            if (bgmOsc) {
+                try { bgmOsc.stop(); } catch(e){}
+                bgmOsc = null;
+            }
+            isBgmPlaying = false;
+            document.getElementById('bgmIcon').className = 'fa-solid fa-volume-xmark text-red-400';
+            document.getElementById('bgmText').innerText = 'Nhạc: Tắt';
+        }
+
+        /* ==========================================================================
+           5. GAME MECHANICS & HUD UPDATES
+           ========================================================================== */
+        function shuffleArray(array) {
+            const arr = [...array];
+            for (let i = arr.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [arr[i], arr[j]] = [arr[j], arr[i]];
+            }
+            return arr;
+        }
+
+        function updateHUD() {
+            // Warrior HUD
+            document.getElementById('warriorHpText').innerText = `${warriorLives} / 10 MẠNG`;
+            document.getElementById('warriorHpBar').style.width = `${(warriorLives/10)*100}%`;
+            let wIcons = '';
+            for(let i=0; i<10; i++) {
+                if(i < warriorLives) {
+                    wIcons += `<i class="fa-solid fa-shield-halved text-amber-400"></i>`;
+                } else {
+                    wIcons += `<i class="fa-solid fa-shield-halved text-slate-700"></i>`;
+                }
+            }
+            document.getElementById('warriorLivesIcons').innerHTML = wIcons;
+
+            // Dragon HUD
+            document.getElementById('dragonHpText').innerText = `${dragonLives} / 10 MẠNG`;
+            document.getElementById('dragonHpBar').style.width = `${(dragonLives/10)*100}%`;
+            let dIcons = '';
+            for(let i=0; i<10; i++) {
+                if(i < dragonLives) {
+                    dIcons += `<i class="fa-solid fa-fire text-red-500"></i>`;
+                } else {
+                    dIcons += `<i class="fa-solid fa-fire text-slate-700"></i>`;
+                }
+            }
+            document.getElementById('dragonLivesIcons').innerHTML = dIcons;
+        }
+
+        function loadQuestion() {
+            isAnimating = false;
+            document.getElementById('feedbackBox').classList.add('hidden');
+            document.getElementById('submitBtn').classList.remove('hidden');
+            document.getElementById('nextBtn').classList.add('hidden');
+
+            const q = currentQuestions[currentQuestionIdx];
+            document.getElementById('questionCounter').innerText = `CÂU HỎI ${currentQuestionIdx + 1} / 10`;
+            document.getElementById('questionText').innerText = q.question;
+
+            const isMulti = q.type === 'multiple';
+            document.getElementById('questionTypeBadge').innerText = isMulti ? "Chọn nhiều đáp án" : "Chọn 1 đáp án";
+
+            const grid = document.getElementById('optionsGrid');
+            grid.innerHTML = '';
+
+            const optionLetters = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I'];
+
+            q.options.forEach((opt, idx) => {
+                const btn = document.createElement('label');
+                btn.className = `glass-card p-3 rounded-lg flex items-start space-x-3 cursor-pointer text-xs sm:text-sm select-none border border-slate-700/60`;
+                
+                const inputType = isMulti ? 'checkbox' : 'radio';
+                btn.innerHTML = `
+                    <input type="${inputType}" name="quizOption" value="${idx}" class="mt-0.5 accent-amber-500 w-4 h-4 rounded cursor-pointer">
+                    <span class="text-slate-200 leading-snug"><strong class="text-amber-400">${optionLetters[idx]}.</strong> ${opt}</span>
+                `;
+                grid.appendChild(btn);
+            });
+        }
+
+        function submitAnswer() {
+            if(isAnimating) return;
+
+            const q = currentQuestions[currentQuestionIdx];
+            const selectedNodes = document.querySelectorAll('input[name="quizOption"]:checked');
+            if(selectedNodes.length === 0) {
+                alert('Vui lòng chọn câu trả lời trước khi xác nhận!');
+                return;
+            }
+
+            const selectedValues = Array.from(selectedNodes).map(n => parseInt(n.value)).sort();
+            const correctValues = [...q.correct].sort();
+
+            // Check if user answer matches exact correct array
+            const isCorrect = JSON.stringify(selectedValues) === JSON.stringify(correctValues);
+
+            isAnimating = true;
+            document.getElementById('submitBtn').classList.add('hidden');
+
+            // Show Feedback & Explanation
+            const feedbackBox = document.getElementById('feedbackBox');
+            const feedbackTitle = document.getElementById('feedbackTitle');
+            const feedbackExplanation = document.getElementById('feedbackExplanation');
+
+            feedbackBox.classList.remove('hidden');
+
+            if(isCorrect) {
+                correctCount++;
+                dragonLives = Math.max(0, dragonLives - 1);
+                feedbackBox.className = 'mt-3 p-3 rounded-lg text-xs md:text-sm font-medium border bg-amber-950/80 border-amber-500 text-amber-200';
+                feedbackTitle.innerHTML = `<i class="fa-solid fa-circle-check text-amber-400 text-base"></i> CHÍNH XÁC! ĐÒN TẤN CÔNG THÀNH CÔNG!`;
+                feedbackExplanation.innerText = q.explanation ? `Giải thích: ${q.explanation}` : '';
+                
+                // Trigger Attack Animation
+                triggerWarriorAttack();
+            } else {
+                wrongCount++;
+                warriorLives = Math.max(0, warriorLives - 1);
+                feedbackBox.className = 'mt-3 p-3 rounded-lg text-xs md:text-sm font-medium border bg-red-950/80 border-red-500 text-red-200';
+                feedbackTitle.innerHTML = `<i class="fa-solid fa-circle-xmark text-red-400 text-base"></i> SAI RỒI! BẠN ĐÃ BỊ PHẢN CÔNG!`;
+                feedbackExplanation.innerText = q.explanation ? `Giải thích: ${q.explanation}` : '';
+                
+                // Trigger Dragon Attack Animation
+                triggerDragonAttack();
+            }
+
+            updateHUD();
+
+            // Check for Game Over Condition Early or Next Question
+            setTimeout(() => {
+                if(warriorLives <= 0 || dragonLives <= 0 || currentQuestionIdx >= 9) {
+                    finishGame();
+                } else {
+                    document.getElementById('nextBtn').classList.remove('hidden');
+                }
+                isAnimating = false;
+            }, 1200);
+        }
+
+        function nextQuestion() {
+            if(currentQuestionIdx < 9 && warriorLives > 0 && dragonLives > 0) {
+                currentQuestionIdx++;
+                loadQuestion();
+            } else {
+                finishGame();
+            }
+        }
+
+        /* ==========================================================================
+           6. ANIMATIONS & REVERT TO IDLE RULE
+           ========================================================================== */
+        function triggerWarriorAttack() {
+            playSound('correct');
+            const warrior = document.getElementById('warriorSpriteContainer');
+            const dragon = document.getElementById('dragonSpriteContainer');
+            const container = document.getElementById('gameContainer');
+
+            warrior.classList.remove('warrior-idle');
+            warrior.classList.add('warrior-attack');
+
+            setTimeout(() => {
+                playSound('kick');
+                dragon.classList.remove('dragon-idle');
+                dragon.classList.add('dragon-hit');
+                container.classList.add('shake');
+            }, 400);
+
+            // MANDATORY RESET TO NORMAL IDLE STANCE
+            setTimeout(() => {
+                warrior.classList.remove('warrior-attack');
+                warrior.classList.add('warrior-idle');
+                dragon.classList.remove('dragon-hit');
+                dragon.classList.add('dragon-idle');
+                container.classList.remove('shake');
+            }, 1000);
+        }
+
+        function triggerDragonAttack() {
+            playSound('wrong');
+            const warrior = document.getElementById('warriorSpriteContainer');
+            const dragon = document.getElementById('dragonSpriteContainer');
+            const container = document.getElementById('gameContainer');
+
+            dragon.classList.remove('dragon-idle');
+            dragon.classList.add('dragon-attack');
+
+            setTimeout(() => {
+                warrior.classList.remove('warrior-idle');
+                warrior.classList.add('warrior-hit');
+                container.classList.add('shake');
+            }, 300);
+
+            // MANDATORY RESET TO NORMAL IDLE STANCE
+            setTimeout(() => {
+                dragon.classList.remove('dragon-attack');
+                dragon.classList.add('dragon-idle');
+                warrior.classList.remove('warrior-hit');
+                warrior.classList.add('warrior-idle');
+                container.classList.remove('shake');
+            }, 1000);
+        }
+
+        /* ==========================================================================
+           7. GAME FLOW (START, FINISH, RESTART)
+           ========================================================================== */
+        function startGame() {
+            initAudio();
+            document.getElementById('startScreen').classList.add('hidden');
+            restartGame();
+        }
+
+        function restartGame() {
+            currentQuestions = shuffleArray(originalQuestions);
+            currentQuestionIdx = 0;
+            warriorLives = 10;
+            dragonLives = 10;
+            correctCount = 0;
+            wrongCount = 0;
+
+            document.getElementById('gameOverModal').classList.add('hidden');
+            updateHUD();
+            loadQuestion();
+        }
+
+        function finishGame() {
+            playSound('win');
+            const modal = document.getElementById('gameOverModal');
+            const title = document.getElementById('resultTitle');
+            const desc = document.getElementById('resultDesc');
+            const refImg = document.getElementById('resultReferenceImg');
+            const resCanvas = document.getElementById('resultCanvas');
+
+            document.getElementById('statCorrect').innerText = correctCount;
+            document.getElementById('statWrong').innerText = wrongCount;
+            document.getElementById('statLives').innerText = warriorLives;
+
+            const isWin = dragonLives === 0 || (warriorLives > dragonLives);
+
+            if (isWin) {
+                title.className = "font-cinzel text-2xl sm:text-3xl font-black mb-2 text-amber-400";
+                title.innerText = "CHIẾN THẮNG — NỮ CHIẾN BINH ĐÃ ĐÁNH BẠI RỒNG ĐỎ!";
+                desc.innerText = "Sức mạnh chân lý và ý chí kiên cường đã giúp cô hạ gục con Rồng Đỏ 7 đầu 10 sừng!";
+                
+                if (refMedia.win) {
+                    refImg.src = refMedia.win;
+                    refImg.classList.remove('hidden');
+                    resCanvas.classList.add('hidden');
+                } else {
+                    refImg.classList.add('hidden');
+                    resCanvas.classList.remove('hidden');
+                    drawVictoryCanvas();
+                }
+            } else {
+                title.className = "font-cinzel text-2xl sm:text-3xl font-black mb-2 text-red-500";
+                title.innerText = "THẤT BẠI — RỒNG ĐỎ ĐÃ CHIẾN THẮNG!";
+                desc.innerText = "Nữ chiến binh đã cạn kiệt mạng sống trước ngọn lửa dữ dội của Rồng Đỏ. Hãy thử lại!";
+                
+                if (refMedia.lose) {
+                    refImg.src = refMedia.lose;
+                    refImg.classList.remove('hidden');
+                    resCanvas.classList.add('hidden');
+                } else {
+                    refImg.classList.add('hidden');
+                    resCanvas.classList.remove('hidden');
+                    drawDefeatCanvas();
+                }
+            }
+
+            modal.classList.remove('hidden');
+        }
+
+        function drawVictoryCanvas() {
+            const cvs = document.getElementById('resultCanvas');
+            const ctx = cvs.getContext('2d');
+            cvs.width = 400; cvs.height = 200;
+            ctx.fillStyle = '#064e3b'; ctx.fillRect(0,0,400,200);
+            ctx.fillStyle = '#34d399'; ctx.font = 'bold 20px Montserrat';
+            ctx.textAlign = 'center';
+            ctx.fillText('NỮ CHIẾN BINH CHIẾN THẮNG', 200, 100);
+        }
+
+        function drawDefeatCanvas() {
+            const cvs = document.getElementById('resultCanvas');
+            const ctx = cvs.getContext('2d');
+            cvs.width = 400; cvs.height = 200;
+            ctx.fillStyle = '#450a0a'; ctx.fillRect(0,0,400,200);
+            ctx.fillStyle = '#f87171'; ctx.font = 'bold 20px Montserrat';
+            ctx.textAlign = 'center';
+            ctx.fillText('NỮ CHIẾN BINH THẤT BẠI', 200, 100);
+        }
+
+        /* ==========================================================================
+           8. MEDIA & GITHUB MODAL HANDLERS
+           ========================================================================== */
+        function openMediaModal() {
+            document.getElementById('mediaModal').classList.remove('hidden');
+        }
+        function closeMediaModal() {
+            document.getElementById('mediaModal').classList.add('hidden');
+        }
+
+        function openGithubGuide() {
+            document.getElementById('githubModal').classList.remove('hidden');
+        }
+        function closeGithubGuide() {
+            document.getElementById('githubModal').classList.add('hidden');
+        }
+
+        function handleFileUpload(event, type) {
+            const file = event.target.files[0];
+            if(file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    refMedia[type] = e.target.result;
+                    applyReferenceImages();
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        function setRefUrl(type, url) {
+            refMedia[type] = url;
+            applyReferenceImages();
+        }
+
+        function applyReferenceImages() {
+            if (refMedia.idle) {
+                document.getElementById('warriorImg').src = refMedia.idle;
+                document.getElementById('warriorImg').classList.remove('hidden');
+                document.getElementById('warriorCanvas').classList.add('hidden');
+
+                document.getElementById('dragonImg').src = refMedia.idle;
+                document.getElementById('dragonImg').classList.remove('hidden');
+                document.getElementById('dragonCanvas').classList.add('hidden');
+            }
+        }
+
+        function handleVideoUpload(event) {
+            const file = event.target.files[0];
+            if(file) {
+                const url = URL.createObjectURL(file);
+                refMedia.trailer = url;
+                document.getElementById('trailerVideo').src = url;
+            }
+        }
+
+        function playTrailerModal() {
+            if(refMedia.trailer) {
+                document.getElementById('trailerVideo').src = refMedia.trailer;
+            }
+            document.getElementById('trailerModal').classList.remove('hidden');
+            const vid = document.getElementById('trailerVideo');
+            if(vid) vid.play();
+        }
+
+        function closeTrailerModal() {
+            const vid = document.getElementById('trailerVideo');
+            if(vid) vid.pause();
+            document.getElementById('trailerModal').classList.add('hidden');
+        }
+
+        /* ==========================================================================
+           9. INITIALIZATION ON WINDOW LOAD
+           ========================================================================== */
+        window.onload = function() {
+            drawWarriorCanvas();
+            drawDragonCanvas();
+            initFireParticles();
+            renderFireParticles();
+            updateHUD();
+
+            window.addEventListener('resize', initFireParticles);
+        };
+    </script>
+</body>
+</html>
